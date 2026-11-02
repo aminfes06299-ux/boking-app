@@ -9,7 +9,6 @@ export async function middleware(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  // إذا كانت المتغيرات غير موجودة لا تجعل الـ Middleware ينهار
   if (!supabaseUrl || !supabaseAnonKey) {
     return supabaseResponse
   }
@@ -38,7 +37,6 @@ export async function middleware(request: NextRequest) {
 
     await supabase.auth.getUser()
   } catch (e) {
-    // يتجاهل الخطأ في حالة انقطاع مؤقت لكي لا تتوقف الصفحة تماماً
     console.error('Middleware Supabase error:', e)
   }
 
@@ -50,3 +48,5 @@ export const config = {
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
+     
+           
