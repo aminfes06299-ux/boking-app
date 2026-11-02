@@ -8,7 +8,8 @@ const STATUS: Record<string, string> = { confirmed: 'Confirmé', cancelled: 'Ann
 export default async function Home() {
   const sb = await serverClient();
   const { data: { user } } = await sb.auth.getUser();
-  const { data: me } = await sb.from('profiles').select('full_name,email,active,role').eq('id', user!.id).single();
+if (!user) redirect('/login');
+const { data: me } = await sb.from('profiles').select('full_name,email,active,role').eq('id', user.id).single(); 
   const { data: all } = await sb.from('bookings').select('id,ref,starts_at,ends_at,status').order('starts_at', { ascending: false });
   const now = Date.now();
   const upcoming = (all ?? []).filter((b) => b.status === 'confirmed' && new Date(b.starts_at).getTime() > now).reverse();
