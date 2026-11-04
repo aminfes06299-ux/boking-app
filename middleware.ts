@@ -2,52 +2,42 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
+  let res = NextResponse.next({ request })
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !key) return res
 
-  // إذا كانت المتغيرات غير موجودة لا تجعل الـ Middleware ينهار
-  if (!supabaseUrl || !supabaseAnonKey) {
-    return supabaseResponse
-  }
+  const p = request.nextUrl.pathname
+  const open =
+    p.startsWith('/login') || p.startsWith('/auth') || p.startsWith('/api/cron')
 
+  let user = null
   try {
-    const supabase = createServerClient(
-      supabaseUrl,
-      supabaseAnonKey,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll()
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-            supabaseResponse = NextResponse.next({
-              request,
-            })
-            cookiesToSet.forEach(({ name, value, options }) =>
-              supabaseResponse.cookies.set(name, value, options)
-            )
-          },
+    const supabase = createServerClient(url, key, {
+      cookies: {
+        getAll: () => request.cookies.getAll(),
+        setAll: (list) => {
+          list.forEach(({ name, value }) => request.cookies.set(name, value))
+          res = NextResponse.next({ request })
+          list.forEach(({ name, value, options }) =>
+            res.cookies.set(name, value, options)
+          )
         },
-      }
-    )
-
-    await supabase.auth.getUser()
+      },
+    })
+    const { data } = await supabase.auth.getUser()
+    user = data.user
   } catch (e) {
-    // يتجاهل الخطأ في حالة انقطاع مؤقت لكي لا تتوقف الصفحة تماماً
     console.error('Middleware Supabase error:', e)
   }
 
-  return supabaseResponse
+  if (!user && !open) {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+  return res
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  matcher: ['/((?!_next|favicon.ico).*)'],
 }
-
