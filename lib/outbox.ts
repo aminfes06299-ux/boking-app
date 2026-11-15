@@ -1,9 +1,43 @@
 import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import { createClient } from '@supabase/supabase-js';
 
 const fmt = (d: string, o: Intl.DateTimeFormatOptions) =>
   new Intl.DateTimeFormat('fr-FR', { timeZone: 'Africa/Casablanca', ...o }).format(new Date(d));
-const LABEL: Record<string, string> = { confirmed: 'confirmée', cancelled: 'annulée', changed: 'modifiée' };
+// Envoi par Gmail (SMTP) si GMAIL_USER et GMAIL_APP_PASSWORD sont définis ; sinon Resend.
+const gmailUser = process.env.GMAIL_USER;
+const gmailPass = process.env.GMAIL_APP_PASSWORD;
+const smtp = gmailUser && gmailPass
+  ? nodemailer.createTransport({ host: 'smtp.gmail.com', port: 465, secure: true, auth: { user: gmailUser, pass: gmailPass } })
+  : null;
+
+const icsDate = (d: string) => new Date(d).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+const icsText = (t: string) => t.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+// Fichier calendrier (.ics) joint à l'e-mail de confirmation
+function makeIcs(b: { ref: string; starts_at: string; ends_at: string }, summary: string, description: string) {
+  return [
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Coach El Morabit//Reservation//FR', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+    'BEGIN:VEVENT', `UID:${b.ref}@coach-el-morabit`, `DTSTAMP:${icsDate(new Date().toISOString())}`,
+    `DTSTART:${icsDate(b.starts_at)}`, `DTEND:${icsDate(b.ends_at)}`,
+    `SUMMARY:${icsText(summary)}`, `DESCRIPTION:${icsText(description)}`, 'END:VEVENT', 'END:VCALENDAR',
+  ].join('\r\n');
+}
+
+async function sendMail(to: string, subject: string, html: string, ics?: string) {
+  if (smtp) {
+    const from = process.env.EMAIL_FROM || `"Coach El Morabit" <${gmailUser}>`;
+    await smtp.sendMail({
+      from, to, subject, html,
+      ...(ics ? { attachments: [{ filename: 'seance.ics', content: ics, contentType: 'text/calendar; charset=utf-8; method=PUBLISH' }] } : {}),
+    });
+    return;
+  }
+  if (!process.env.RESEND_API_KEY) throw new Error('Aucun service e-mail configuré (GMAIL_USER/GMAIL_APP_PASSWORD ou RESEND_API_KEY)');
+  const { error } = await new Resend(process.env.RESEND_API_KEY).emails.send({ from: process.env.EMAIL_FROM!, to, subject, html });
+  if (error) throw new Error(error.message);
+}
+
+const LABEL: Record<string, string> = { confirmed: 'confirmée', cancelled: 'annulée', changed: 'modifiée', reminder: 'prévue' };
 
 // Envoie les e-mails en attente. Si l'envoi échoue, la réservation reste intacte et la ligne sera retentée (5 essais max).
 export async function processOutbox() {
@@ -15,7 +49,6 @@ export async function processOutbox() {
 
   for (const j of jobs ?? []) {
     try {
-      if (!process.env.RESEND_API_KEY) throw new Error('RESEND_API_KEY manquante');
       const b = j.booking, c = b.client;
       const [event, who] = j.kind.split('_');
       const date = fmt(b.starts_at, { dateStyle: 'full' });
@@ -24,17 +57,23 @@ export async function processOutbox() {
       const toClient = who === 'client';
       const to = toClient ? c.email : st?.notify_email;
       if (!to) throw new Error('Adresse de destination absente');
-      const subject = toClient
+      const subject = event === 'reminder'
+        ? `Rappel : votre séance de demain à ${t1}`
+        : toClient
         ? `Votre séance du ${date} est ${LABEL[event]}`
         : event === 'confirmed'
           ? `Nouvelle réservation de séance – ${name} – ${date} à ${t1}`
           : `Séance ${LABEL[event]} – ${name} – ${date} à ${t1}`;
       const rows = `<p><b>Date :</b> ${date}<br><b>Horaire :</b> ${t1} – ${t2} (60 min)<br><b>Identifiant :</b> ${b.ref}<br><b>Statut :</b> ${b.status}</p>`;
-      const html = toClient
+      const html = event === 'reminder'
+        ? `<p>Bonjour ${name},</p><p>Petit rappel : votre séance a lieu demain.</p>${rows}${st?.contact_info ? `<p>En cas d'empêchement, contactez-moi au ${String(st.contact_info).replace(/[\u200e\u200f]/g, '').trim()}.</p>` : ''}`
+        : toClient
         ? `<p>Bonjour ${name},</p><p>Votre séance est ${LABEL[event]}.</p>${rows}<p>${st?.confirmation_message ?? ''}</p><p>Annulation possible jusqu'à ${st?.cancel_hours} h avant la séance depuis votre espace.</p>`
         : `<p>Client : ${name} (${c.email})${c.phone ? ' — ' + c.phone : ''}</p>${rows}`;
-      const { error } = await new Resend(process.env.RESEND_API_KEY).emails.send({ from: process.env.EMAIL_FROM!, to, subject, html });
-      if (error) throw new Error(error.message);
+      const ics = toClient && event === 'confirmed'
+        ? makeIcs(b, 'Séance – Coach El Morabit', `Séance de 60 minutes. Réf. ${b.ref}`)
+        : undefined;
+      await sendMail(to, subject, html, ics);
       await sb.from('email_outbox').update({ status: 'sent', attempts: j.attempts + 1, last_error: null }).eq('id', j.id);
     } catch (e: any) {
       await sb.from('email_outbox').update({ status: 'failed', attempts: j.attempts + 1, last_error: String(e.message ?? e) }).eq('id', j.id);

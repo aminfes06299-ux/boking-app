@@ -1,13 +1,22 @@
 import { NextResponse, after } from 'next/server';
 import { serverClient } from '@/lib/supabase-server';
 import { processOutbox } from '@/lib/outbox';
+import { createClient } from '@supabase/supabase-js';
 
 export async function POST(req: Request) {
-  const { start } = await req.json().catch(() => ({}));
+  const { start, name: rawName } = await req.json().catch(() => ({} as any));
   if (!start || Number.isNaN(Date.parse(start))) return NextResponse.json({ error: 'Créneau invalide.' }, { status: 400 });
   const sb = await serverClient();
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Veuillez vous reconnecter.' }, { status: 401 });
+
+  // Nom du client : obligatoire, nettoyé, enregistré sur son profil (seule colonne modifiée : full_name)
+  const name = (typeof rawName === 'string' ? rawName : '').replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 80);
+  if (name.length < 2) return NextResponse.json({ error: 'Merci d’indiquer votre nom complet.' }, { status: 400 });
+  try {
+    const svc = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } });
+    await svc.from('profiles').update({ full_name: name }).eq('id', user.id);
+  } catch {}
 
   const { data, error } = await sb.rpc('book_slot', { p_start: new Date(start).toISOString() });
   if (error) {

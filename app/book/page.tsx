@@ -12,6 +12,7 @@ export default function Book() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const [done, setDone] = useState(false);
+  const [name, setName] = useState('');
 
   const load = (d: string) => {
     setSlots(null); setSel(null);
@@ -22,9 +23,20 @@ export default function Book() {
   };
   useEffect(() => load(day), [day]);
 
+  // Pré-remplit le nom s'il est déjà connu
+  useEffect(() => {
+    const sb = createClient();
+    sb.auth.getUser().then(({ data }) => {
+      if (!data.user) return;
+      sb.from('profiles').select('full_name').eq('id', data.user.id).single().then(({ data: me }) => {
+        if (me?.full_name) setName((n) => n || me.full_name);
+      });
+    });
+  }, []);
+
   async function confirm() {
     setBusy(true); setErr('');
-    const r = await fetch('/api/book', { method: 'POST', body: JSON.stringify({ start: sel }) });
+    const r = await fetch('/api/book', { method: 'POST', body: JSON.stringify({ start: sel, name: name.trim() }) });
     setBusy(false);
     if (r.ok) setDone(true); else { setErr((await r.json()).error); load(day); }
   }
@@ -64,7 +76,10 @@ export default function Book() {
           <p className="text-xs uppercase tracking-wide text-stone-500">Récapitulatif</p>
           <p className="mt-1 text-lg font-medium capitalize">{fmtDate(sel)}</p>
           <p className="text-stone-600">{fmtTime(sel)} · durée 60 minutes</p>
-          <button onClick={confirm} disabled={busy} className="mt-4 w-full rounded-xl bg-[#7A8F7A] px-4 py-3 font-medium text-white transition hover:bg-[#6B7F6B] disabled:opacity-60">{busy ? 'Confirmation…' : 'Confirmer la réservation'}</button>
+          <label className="mt-4 block text-sm text-stone-600" htmlFor="full-name">Votre nom complet</label>
+          <input id="full-name" required autoComplete="name" maxLength={80} value={name} onChange={(e) => setName(e.target.value)} placeholder="Prénom et nom" className="mt-1 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 outline-none focus:border-[#7A8F7A]" />
+          <button onClick={confirm} disabled={busy || name.trim().length < 2} className="mt-4 w-full rounded-xl bg-[#7A8F7A] px-4 py-3 font-medium text-white transition hover:bg-[#6B7F6B] disabled:opacity-60">{busy ? 'Confirmation…' : 'Confirmer la réservation'}</button>
+          <p className="mt-3 text-center text-xs text-stone-400">En réservant, vous acceptez les <Link href="/conditions" className="underline">conditions d’annulation</Link> et la <Link href="/confidentialite" className="underline">politique de confidentialité</Link>.</p>
         </div>
       )}
     </>
