@@ -8,11 +8,11 @@ export default async function Conditions() {
   const { cancelHours, contact } = await publicSettings();
   const h2 = 'mt-6 text-base font-semibold';
   return (
-    <>
-      <Link href="/login" className="text-sm text-stone-500 underline">← Retour</Link>
+    <div className="mx-auto max-w-2xl">
+      <Link href="/login" className="text-sm text-muted underline">← Retour</Link>
 
-      <article className="mt-4 text-sm leading-relaxed text-stone-700">
-        <h1 className="text-2xl font-semibold text-stone-900">Conditions de réservation et d’annulation</h1>
+      <article className="mt-4 text-sm leading-relaxed text-ink">
+        <h1 className="text-2xl font-semibold text-navy">Conditions de réservation et d’annulation</h1>
 
         <h2 className={h2}>Séances</h2>
         <p>Chaque séance dure 60 minutes. La réservation se fait en ligne et vous est confirmée par e-mail.</p>
@@ -27,8 +27,8 @@ export default async function Conditions() {
         <p>Ce service sert uniquement à réserver des séances ; il ne permet pas de traiter une urgence. Si vous êtes en danger ou en grande détresse, contactez les services d’urgence de votre pays ou rendez-vous aux urgences les plus proches.</p>
       </article>
 
-      <article dir="rtl" lang="ar" className="mt-12 border-t border-stone-200 pt-8 text-sm leading-loose text-stone-700">
-        <h1 className="text-2xl font-semibold text-stone-900">شروط الحجز والإلغاء</h1>
+      <article dir="rtl" lang="ar" className="mt-12 border-t border-stone-200 pt-8 text-sm leading-loose text-ink">
+        <h1 className="text-2xl font-semibold text-navy">شروط الحجز والإلغاء</h1>
 
         <h2 className={h2}>الجلسات</h2>
         <p>مدة كل جلسة 60 دقيقة. يتم الحجز عبر الموقع ويصلك تأكيده برسالة بريد إلكتروني.</p>
@@ -42,6 +42,6 @@ export default async function Conditions() {
         <h2 className={h2}>تنبيه مهم</h2>
         <p>هذه الخدمة مخصصة لحجز الجلسات فقط، ولا تصلح للحالات الطارئة. إذا كنت في خطر أو ضيق شديد، فاتصل بخدمات الطوارئ في بلدك أو توجّه إلى أقرب مستعجلات.</p>
       </article>
-    </>
+    </div>
   );
 }

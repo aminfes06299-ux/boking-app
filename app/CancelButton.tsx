@@ -1,18 +1,22 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-export default function CancelButton({ id }: { id: string }) {
+import { useT } from '@/components/LangProvider';
+
+export default function CancelButton({ id, light = false }: { id: string; light?: boolean }) {
+  const { t } = useT();
   const [ask, setAsk] = useState(false); const [err, setErr] = useState(''); const router = useRouter();
   async function go() {
     const r = await fetch('/api/cancel', { method: 'POST', body: JSON.stringify({ id }) });
     if (r.ok) router.refresh(); else { setErr((await r.json()).error); setAsk(false); }
   }
+  const link = light ? 'text-white/85 underline' : 'text-muted underline';
   return (
-    <div className="mt-3 text-sm">
+    <div className="mt-5 text-sm">
       {ask ? (
-        <span>Confirmer l'annulation ? <button onClick={go} className="font-medium text-red-700 underline">Oui</button> · <button onClick={() => setAsk(false)} className="underline">Non</button></span>
-      ) : <button onClick={() => setAsk(true)} className="text-stone-500 underline">Annuler ce rendez-vous</button>}
-      {err && <p className="mt-1 text-red-700">{err}</p>}
+        <span>{t('confirmCancel')} <button onClick={go} className="font-semibold underline">{t('yes')}</button> · <button onClick={() => setAsk(false)} className="underline">{t('no')}</button></span>
+      ) : <button onClick={() => setAsk(true)} className={link}>{t('cancelThis')}</button>}
+      {err && <p className="mt-1 text-red-300">{err}</p>}
     </div>
   );
 }

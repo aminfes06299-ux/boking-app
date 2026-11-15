@@ -3,8 +3,10 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase-browser';
 import { fmtDate, fmtTime, localDay, dayParts } from '@/lib/format';
+import { useT } from '@/components/LangProvider';
 
 export default function Book() {
+  const { t, lang } = useT();
   const days = useMemo(() => Array.from({ length: 31 }, (_, i) => localDay(new Date(Date.now() + i * 864e5))), []);
   const [day, setDay] = useState(days[0]);
   const [slots, setSlots] = useState<string[] | null>(null);
@@ -17,7 +19,7 @@ export default function Book() {
   const load = (d: string) => {
     setSlots(null); setSel(null);
     createClient().rpc('get_available_slots', { p_date: d }).then(({ data, error }) => {
-      setErr(error ? 'Impossible de charger les créneaux. Merci de réessayer.' : '');
+      setErr(error ? t('errSlots') : '');
       setSlots((data as string[]) ?? []);
     });
   };
@@ -42,46 +44,46 @@ export default function Book() {
   }
 
   if (done && sel) return (
-    <div className="mt-10 rounded-2xl bg-white/70 p-6 text-center ring-1 ring-stone-200">
-      <h1 className="text-2xl font-semibold">Réservation confirmée</h1>
-      <p className="mt-3 capitalize">{fmtDate(sel)}</p>
-      <p className="text-stone-600">{fmtTime(sel)} · 60 min</p>
-      <p className="mt-4 text-sm text-stone-500">Un e-mail de confirmation vous sera envoyé.</p>
-      <Link href="/" className="mt-6 block rounded-xl bg-[#7A8F7A] px-4 py-3 font-medium text-white">Retour à mon espace</Link>
+    <div className="mx-auto mt-6 max-w-xl rounded-3xl border border-line bg-white p-8 text-center">
+      <h1 className="text-2xl font-semibold text-navy">{t('confirmedTitle')}</h1>
+      <p className="mt-4 text-lg capitalize">{fmtDate(sel, lang)}</p>
+      <p className="text-muted">{fmtTime(sel, lang)} · {t('min60')}</p>
+      <p className="mt-4 text-sm text-muted">{t('emailSoon')}</p>
+      <Link href="/" className="mt-6 block rounded-xl bg-teal px-4 py-3.5 font-semibold text-white hover:bg-teal-dark">{t('backHome')}</Link>
     </div>
   );
 
   return (
-    <>
-      <Link href="/" className="text-sm text-stone-500 underline">← Retour</Link>
-      <h1 className="mt-4 text-2xl font-semibold">Choisir un créneau</h1>
+    <div className="mx-auto max-w-xl">
+      <Link href="/" className="text-sm text-muted underline">{t('back')}</Link>
+      <h1 className="mt-4 text-3xl font-semibold text-navy">{t('chooseSlot')}</h1>
       <div className="-mx-5 mt-6 flex gap-2 overflow-x-auto px-5 pb-2">
-        {days.map((d) => { const p = dayParts(d); const on = d === day; return (
-          <button key={d} onClick={() => setDay(d)} className={`min-w-14 rounded-xl px-3 py-2 text-center text-sm ring-1 transition ${on ? 'bg-[#7A8F7A] text-white ring-[#7A8F7A]' : 'bg-white/70 ring-stone-200'}`}>
-            <span className="block capitalize">{p.wd}</span><span className="text-lg font-medium">{p.n}</span>
+        {days.map((d) => { const p = dayParts(d, lang); const on = d === day; return (
+          <button key={d} onClick={() => setDay(d)} className={`min-h-14 min-w-14 rounded-xl px-3 py-2 text-center text-sm ring-1 transition ${on ? 'bg-teal text-white ring-teal' : 'bg-white ring-line hover:ring-teal'}`}>
+            <span className="block capitalize">{p.wd}</span><span className="text-lg font-semibold">{p.n}</span>
           </button>); })}
       </div>
 
       <div className="mt-6">
-        {slots === null ? <p className="text-sm text-stone-500">Chargement…</p>
-          : slots.length === 0 ? <p className="rounded-xl bg-white/70 p-4 text-sm text-stone-500 ring-1 ring-stone-200">Aucun créneau libre ce jour-là. Essayez une autre date.</p>
-          : <div className="grid grid-cols-3 gap-2">{slots.map((s) => (
-              <button key={s} onClick={() => setSel(s)} className={`rounded-xl py-3 text-sm font-medium ring-1 transition ${sel === s ? 'bg-[#7A8F7A] text-white ring-[#7A8F7A]' : 'bg-white ring-stone-300 hover:ring-[#7A8F7A]'}`}>{fmtTime(s)}</button>))}</div>}
+        {slots === null ? <p className="text-sm text-muted">{t('loadingSlots')}</p>
+          : slots.length === 0 ? <p className="rounded-xl border border-line bg-white p-4 text-sm text-muted">{t('noSlots')}</p>
+          : <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">{slots.map((s) => (
+              <button key={s} onClick={() => setSel(s)} className={`min-h-12 rounded-xl py-3 text-sm font-semibold ring-1 transition ${sel === s ? 'bg-teal text-white ring-teal' : 'bg-white ring-[#B7CAD3] hover:ring-teal'}`}>{fmtTime(s, lang)}</button>))}</div>}
       </div>
 
-      {err && <p className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-800">{err}</p>}
+      {err && <p role="alert" className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-800">{err}</p>}
 
       {sel && (
-        <div className="mt-6 rounded-2xl bg-white/70 p-5 ring-1 ring-stone-200">
-          <p className="text-xs uppercase tracking-wide text-stone-500">Récapitulatif</p>
-          <p className="mt-1 text-lg font-medium capitalize">{fmtDate(sel)}</p>
-          <p className="text-stone-600">{fmtTime(sel)} · durée 60 minutes</p>
-          <label className="mt-4 block text-sm text-stone-600" htmlFor="full-name">Votre nom complet</label>
-          <input id="full-name" required autoComplete="name" maxLength={80} value={name} onChange={(e) => setName(e.target.value)} placeholder="Prénom et nom" className="mt-1 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 outline-none focus:border-[#7A8F7A]" />
-          <button onClick={confirm} disabled={busy || name.trim().length < 2} className="mt-4 w-full rounded-xl bg-[#7A8F7A] px-4 py-3 font-medium text-white transition hover:bg-[#6B7F6B] disabled:opacity-60">{busy ? 'Confirmation…' : 'Confirmer la réservation'}</button>
-          <p className="mt-3 text-center text-xs text-stone-400">En réservant, vous acceptez les <Link href="/conditions" className="underline">conditions d’annulation</Link> et la <Link href="/confidentialite" className="underline">politique de confidentialité</Link>.</p>
+        <div className="mt-6 rounded-2xl border border-line bg-white p-5">
+          <p className="text-xs uppercase tracking-widest text-muted">{t('recap')}</p>
+          <p className="mt-1 text-lg font-semibold capitalize text-navy">{fmtDate(sel, lang)}</p>
+          <p className="text-muted">{fmtTime(sel, lang)} · {t('duration')}</p>
+          <label className="mt-4 block text-sm text-muted" htmlFor="full-name">{t('fullName')}</label>
+          <input id="full-name" required autoComplete="name" maxLength={80} value={name} onChange={(e) => setName(e.target.value)} placeholder={t('namePh')} className="inp mt-1" />
+          <button onClick={confirm} disabled={busy || name.trim().length < 2} className="btn mt-4 w-full min-h-12 disabled:opacity-60">{busy ? t('confirming') : t('confirmBtn')}</button>
+          <p className="mt-3 text-center text-xs text-muted">{t('agreePre')}<Link href="/conditions" className="underline">{t('agreeTerms')}</Link>{t('agreeAnd')}<Link href="/confidentialite" className="underline">{t('agreePrivacy')}</Link>.</p>
         </div>
       )}
-    </>
+    </div>
   );
 }

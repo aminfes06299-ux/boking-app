@@ -2,8 +2,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase-browser';
+import { useT } from '@/components/LangProvider';
 
 export default function Compte() {
+  const { t } = useT();
   const [pwd, setPwd] = useState('');
   const [pwd2, setPwd2] = useState('');
   const [busy, setBusy] = useState(false);
@@ -11,26 +13,25 @@ export default function Compte() {
 
   async function save(e: React.FormEvent) {
     e.preventDefault(); setMsg(null);
-    if (pwd.length < 8) { setMsg({ ok: false, text: 'Le mot de passe doit contenir au moins 8 caractères.' }); return; }
-    if (pwd !== pwd2) { setMsg({ ok: false, text: 'Les deux mots de passe ne sont pas identiques.' }); return; }
+    if (pwd.length < 8) { setMsg({ ok: false, text: t('errPwdShort') }); return; }
+    if (pwd !== pwd2) { setMsg({ ok: false, text: t('pwdMismatch') }); return; }
     setBusy(true);
     const { error } = await createClient().auth.updateUser({ password: pwd });
     setBusy(false);
-    if (error) { setMsg({ ok: false, text: 'Impossible de modifier le mot de passe pour le moment.' }); return; }
-    setPwd(''); setPwd2(''); setMsg({ ok: true, text: 'Mot de passe enregistré. Vous pourrez désormais vous connecter avec.' });
+    if (error) { setMsg({ ok: false, text: t('pwdFail') }); return; }
+    setPwd(''); setPwd2(''); setMsg({ ok: true, text: t('pwdSaved') });
   }
 
-  const input = 'w-full rounded-xl border border-stone-300 bg-white px-4 py-3 outline-none focus:border-[#7A8F7A]';
   return (
-    <>
-      <Link href="/" className="text-sm text-stone-500 underline">← Retour</Link>
-      <h1 className="mt-4 text-2xl font-semibold">Mon mot de passe</h1>
+    <div className="mx-auto max-w-md">
+      <Link href="/" className="text-sm text-muted underline">{t('back')}</Link>
+      <h1 className="mt-4 text-3xl font-semibold text-navy">{t('myPwd')}</h1>
       <form onSubmit={save} className="mt-6 space-y-3">
-        <input type="password" required autoComplete="new-password" minLength={8} value={pwd} onChange={(e) => setPwd(e.target.value)} placeholder="Nouveau mot de passe (8 caractères min.)" className={input} />
-        <input type="password" required autoComplete="new-password" value={pwd2} onChange={(e) => setPwd2(e.target.value)} placeholder="Confirmer le mot de passe" className={input} />
-        <button disabled={busy} className="w-full rounded-xl bg-[#7A8F7A] px-4 py-3 font-medium text-white transition hover:bg-[#6B7F6B] disabled:opacity-60">{busy ? 'Enregistrement…' : 'Enregistrer'}</button>
+        <input dir="ltr" type="password" required autoComplete="new-password" minLength={8} value={pwd} onChange={(e) => setPwd(e.target.value)} placeholder={t('newPwd')} className="inp" />
+        <input dir="ltr" type="password" required autoComplete="new-password" value={pwd2} onChange={(e) => setPwd2(e.target.value)} placeholder={t('confPwd')} className="inp" />
+        <button disabled={busy} className="btn w-full min-h-12 disabled:opacity-60">{busy ? t('saving') : t('save')}</button>
       </form>
-      {msg && <p className={`mt-4 rounded-xl p-3 text-sm ${msg.ok ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-700'}`}>{msg.text}</p>}
-    </>
+      {msg && <p role="status" className={`mt-4 rounded-xl p-3 text-sm ${msg.ok ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>{msg.text}</p>}
+    </div>
   );
 }

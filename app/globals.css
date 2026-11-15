@@ -1,8 +1,22 @@
 @import "tailwindcss";
-body { background:#FAF7F0; color:#2E332E; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
-.inp { width:100%; border:1px solid #d6d3d1; background:#fff; border-radius:.75rem; padding:.6rem .8rem; outline:none; }
-.inp:focus { border-color:#7A8F7A; }
-.btn { background:#7A8F7A; color:#fff; border-radius:.75rem; padding:.6rem 1rem; font-weight:500; }
-.btn:hover { background:#6B7F6B; }
-.btn2 { border:1px solid #d6d3d1; border-radius:.75rem; padding:.4rem .8rem; font-size:.85rem; background:#fff; }
-.card { background:rgba(255,255,255,.7); border-radius:1rem; padding:1.25rem; box-shadow:0 0 0 1px #e7e5e4; }
+@theme {
+  --color-navy: #12355B;
+  --color-teal: #0B7C88;
+  --color-teal-dark: #085F69;
+  --color-mint: #E3F4F2;
+  --color-line: #D5E5E8;
+  --color-ink: #1D2B3A;
+  --color-muted: #3E4F60;
+  --color-paper: #F3FAF8;
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: Amiri, "Noto Naskh Arabic", serif;
+}
+body { background: var(--color-paper); color: var(--color-ink); font-family: var(--font-sans); }
+html[dir="rtl"] body { font-family: "Noto Sans Arabic", var(--font-sans); }
+:focus-visible { outline: 2px solid var(--color-teal); outline-offset: 2px; }
+.inp { width:100%; border:1px solid #B7CAD3; background:#fff; border-radius:.75rem; padding:.7rem .9rem; outline:none; }
+.inp:focus { border-color: var(--color-teal); }
+.btn { background: var(--color-teal); color:#fff; border-radius:.75rem; padding:.7rem 1.1rem; font-weight:600; }
+.btn:hover { background: var(--color-teal-dark); }
+.btn2 { border:1px solid #B7CAD3; border-radius:.75rem; padding:.4rem .8rem; font-size:.85rem; background:#fff; }
+.card { background:#fff; border-radius:1rem; padding:1.25rem; border:1px solid var(--color-line); }

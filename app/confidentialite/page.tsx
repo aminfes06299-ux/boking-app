@@ -8,11 +8,11 @@ export default async function Confidentialite() {
   const { contact } = await publicSettings();
   const h2 = 'mt-6 text-base font-semibold';
   return (
-    <>
-      <Link href="/login" className="text-sm text-stone-500 underline">← Retour</Link>
+    <div className="mx-auto max-w-2xl">
+      <Link href="/login" className="text-sm text-muted underline">← Retour</Link>
 
-      <article className="mt-4 text-sm leading-relaxed text-stone-700">
-        <h1 className="text-2xl font-semibold text-stone-900">Politique de confidentialité</h1>
+      <article className="mt-4 text-sm leading-relaxed text-ink">
+        <h1 className="text-2xl font-semibold text-navy">Politique de confidentialité</h1>
 
         <h2 className={h2}>Responsable du traitement</h2>
         <p>Coach El Morabit, accompagnement psychologique et comportemental.{contact && <> Contact : {contact}.</>}</p>
@@ -36,8 +36,8 @@ export default async function Confidentialite() {
         <p>Seuls des cookies techniques, nécessaires à la connexion, sont utilisés. Aucun traceur publicitaire.</p>
       </article>
 
-      <article dir="rtl" lang="ar" className="mt-12 border-t border-stone-200 pt-8 text-sm leading-loose text-stone-700">
-        <h1 className="text-2xl font-semibold text-stone-900">سياسة الخصوصية</h1>
+      <article dir="rtl" lang="ar" className="mt-12 border-t border-stone-200 pt-8 text-sm leading-loose text-ink">
+        <h1 className="text-2xl font-semibold text-navy">سياسة الخصوصية</h1>
 
         <h2 className={h2}>المسؤول عن معالجة المعطيات</h2>
         <p>أمين المرابط، استشاري المرافقة النفسية والدعم السلوكي ومستشار العلاقات الزوجية والأسرية.{contact && <> للتواصل: <span dir="ltr">{contact}</span>.</>}</p>
@@ -60,6 +60,6 @@ export default async function Confidentialite() {
         <h2 className={h2}>ملفات تعريف الارتباط</h2>
         <p>نستعمل ملفات تقنية فقط لازمة لتسجيل الدخول، دون أي تتبع إعلاني.</p>
       </article>
-    </>
+    </div>
   );
 }

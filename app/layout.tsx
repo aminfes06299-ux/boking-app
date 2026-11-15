@@ -1,16 +1,31 @@
 import './globals.css';
 import Link from 'next/link';
+import { getLang } from '@/lib/lang-server';
+import { tr } from '@/lib/i18n';
+import { LangProvider } from '@/components/LangProvider';
+import SiteHeader from '@/components/SiteHeader';
+
 export const metadata = { title: 'Espace de réservation', robots: { index: false, follow: false } };
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const lang = await getLang();
   return (
-    <html lang="fr">
+    <html lang={lang} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600&family=Noto+Sans+Arabic:wght@400;500;600&display=swap" />
+      </head>
       <body>
-        <main className="mx-auto w-full max-w-md px-5 py-10 has-[[data-wide]]:max-w-4xl">{children}</main>
-        <footer className="pb-10 text-center text-xs text-stone-400">
-          <Link href="/confidentialite" className="underline">Confidentialité · الخصوصية</Link>
-          <span className="mx-2">·</span>
-          <Link href="/conditions" className="underline">Conditions · الشروط</Link>
-        </footer>
+        <LangProvider lang={lang}>
+          <SiteHeader />
+          <main className="mx-auto w-full max-w-5xl px-5 py-8">{children}</main>
+          <footer className="pb-10 text-center text-xs text-muted">
+            <Link href="/confidentialite" className="underline">{tr(lang, 'privacy')}</Link>
+            <span className="mx-2">·</span>
+            <Link href="/conditions" className="underline">{tr(lang, 'terms')}</Link>
+          </footer>
+        </LangProvider>
       </body>
     </html>
   );
