@@ -10,6 +10,7 @@ export default async function Home() {
   const { data: { user } } = await sb.auth.getUser();
   const { data: me } = await sb.from('profiles').select('full_name,email,active,role').eq('id', user!.id).single();
   const { data: all } = await sb.from('bookings').select('id,ref,starts_at,ends_at,status').order('starts_at', { ascending: false });
+  const { count: nbRes } = await sb.from('resources').select('id', { count: 'exact', head: true });
   const now = Date.now();
   const upcoming = (all ?? []).filter((b) => b.status === 'confirmed' && new Date(b.starts_at).getTime() > now).reverse();
   const next = upcoming[0];
@@ -27,6 +28,8 @@ export default async function Home() {
       {me?.active ? (
         <Link href="/book" className="mt-8 block rounded-xl bg-[#7A8F7A] px-4 py-4 text-center font-medium text-white transition hover:bg-[#6B7F6B]">Réserver une séance</Link>
       ) : <p className="mt-8 rounded-xl bg-amber-50 p-4 text-sm">Votre accès n'est pas actif pour le moment. Merci de me contacter.</p>}
+
+      <Link href="/bibliotheque" className="mt-3 block rounded-xl border border-stone-300 bg-white px-4 py-4 text-center font-medium transition hover:bg-stone-50">Ma bibliothèque{nbRes ? ` (${nbRes})` : ''}</Link>
 
       <section className="mt-10">
         <h2 className="text-sm font-medium uppercase tracking-wide text-stone-500">Votre prochain rendez-vous</h2>
@@ -54,7 +57,7 @@ export default async function Home() {
         )}
       </section>
       {me?.role === 'admin' && <Link href="/admin" className="mt-8 block text-center text-sm underline">Espace administrateur</Link>}
-      <p className="mt-10 text-xs text-stone-400">Compte : {me?.email}</p>
+      <p className="mt-10 text-xs text-stone-400">Compte : {me?.email} · <Link href="/compte" className="underline">Mot de passe</Link></p>
     </>
   );
 }

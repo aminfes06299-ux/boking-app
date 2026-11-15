@@ -10,7 +10,8 @@ export async function middleware(request: NextRequest) {
 
   const p = request.nextUrl.pathname
   const open =
-    p.startsWith('/login') || p.startsWith('/auth') || p.startsWith('/api/cron')
+    p.startsWith('/login') || p.startsWith('/auth') || p.startsWith('/api/cron') ||
+    p.startsWith('/confidentialite') || p.startsWith('/conditions')
 
   let user = null
   try {

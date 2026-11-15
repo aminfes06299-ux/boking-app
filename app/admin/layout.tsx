@@ -10,6 +10,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <nav className="mb-8 flex flex-wrap gap-4 text-sm">
         <Link href="/admin" className="font-medium">Rendez-vous</Link>
         <Link href="/admin/clients">Clients</Link>
+        <Link href="/admin/library">Bibliothèque</Link>
         <Link href="/admin/availability">Disponibilités</Link>
         <Link href="/admin/settings">Paramètres</Link>
         <Link href="/" className="ml-auto text-stone-500">← Espace client</Link>
