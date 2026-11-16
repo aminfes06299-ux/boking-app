@@ -71,8 +71,10 @@ export default function Login() {
     <div className="mx-auto mt-2 grid max-w-4xl overflow-hidden rounded-3xl border border-line bg-white shadow-sm md:mt-10 md:grid-cols-[1fr_1.1fr]">
       {/* Panneau de marque */}
       <div className="flex flex-col justify-between gap-10 bg-navy p-8 text-white md:p-12">
-        <div dir="rtl">
-          <div className="font-display text-4xl font-bold leading-tight md:text-5xl">أمين المرابط</div>
+        <div dir="rtl" className="text-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/portrait.jpg" srcSet="/portrait-sm.jpg 360w, /portrait.jpg 720w" sizes="(min-width: 768px) 176px, 128px" width={720} height={720} alt="أمين المرابط" className="mx-auto h-32 w-32 rounded-full object-cover ring-4 ring-[#4FC3CC]/70 md:h-44 md:w-44" />
+          <div className="mt-5 font-display text-4xl font-bold leading-tight md:text-5xl">أمين المرابط</div>
           <div className="mt-3 font-display text-lg leading-loose text-[#C4ECEF] md:text-xl">استشاري المرافقة النفسية والدعم السلوكي ومستشار العلاقات الزوجية والأسرية</div>
         </div>
         <div className="hidden flex-col gap-5 md:flex">

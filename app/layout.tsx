@@ -5,7 +5,15 @@ import { tr } from '@/lib/i18n';
 import { LangProvider } from '@/components/LangProvider';
 import SiteHeader from '@/components/SiteHeader';
 
-export const metadata = { title: 'Espace de réservation', robots: { index: false, follow: false } };
+import type { Metadata, Viewport } from 'next';
+
+export const metadata: Metadata = {
+  title: { default: 'Coach El Morabit · Espace de réservation', template: '%s · Coach El Morabit' },
+  description: 'Réservez vos séances et retrouvez vos ressources dans votre espace personnel.',
+  robots: { index: false, follow: false },
+  appleWebApp: { capable: true, title: 'Coach El Morabit', statusBarStyle: 'default' },
+};
+export const viewport: Viewport = { themeColor: '#12355B', width: 'device-width', initialScale: 1 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const lang = await getLang();

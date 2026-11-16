@@ -11,7 +11,8 @@ export async function middleware(request: NextRequest) {
   const p = request.nextUrl.pathname
   const open =
     p.startsWith('/login') || p.startsWith('/auth') || p.startsWith('/api/cron') ||
-    p.startsWith('/confidentialite') || p.startsWith('/conditions')
+    p.startsWith('/confidentialite') || p.startsWith('/conditions') ||
+    p.startsWith('/portrait') || p.startsWith('/icon') || p.startsWith('/apple-icon') || p.startsWith('/manifest')
 
   let user = null
   try {

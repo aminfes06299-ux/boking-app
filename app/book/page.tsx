@@ -45,7 +45,8 @@ export default function Book() {
 
   if (done && sel) return (
     <div className="mx-auto mt-6 max-w-xl rounded-3xl border border-line bg-white p-8 text-center">
-      <h1 className="text-2xl font-semibold text-navy">{t('confirmedTitle')}</h1>
+      <svg className="mx-auto h-16 w-16" viewBox="0 0 52 52" aria-hidden="true"><circle className="check-c" cx="26" cy="26" r="24" fill="none" stroke="#0B7C88" strokeWidth="3" /><path className="check-p" fill="none" stroke="#0B7C88" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" d="M15 27l8 8 15-17" /></svg>
+      <h1 className="mt-4 text-2xl font-semibold text-navy">{t('confirmedTitle')}</h1>
       <p className="mt-4 text-lg capitalize">{fmtDate(sel, lang)}</p>
       <p className="text-muted">{fmtTime(sel, lang)} · {t('min60')}</p>
       <p className="mt-4 text-sm text-muted">{t('emailSoon')}</p>
@@ -65,7 +66,7 @@ export default function Book() {
       </div>
 
       <div className="mt-6">
-        {slots === null ? <p className="text-sm text-muted">{t('loadingSlots')}</p>
+        {slots === null ? <div className="grid grid-cols-3 gap-2 sm:grid-cols-4" aria-busy="true" aria-label={t('loadingSlots')}>{Array.from({ length: 8 }).map((_, i) => <div key={i} className="h-12 animate-pulse rounded-xl bg-line" />)}</div>
           : slots.length === 0 ? <p className="rounded-xl border border-line bg-white p-4 text-sm text-muted">{t('noSlots')}</p>
           : <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">{slots.map((s) => (
               <button key={s} onClick={() => setSel(s)} className={`min-h-12 rounded-xl py-3 text-sm font-semibold ring-1 transition ${sel === s ? 'bg-teal text-white ring-teal' : 'bg-white ring-[#B7CAD3] hover:ring-teal'}`}>{fmtTime(s, lang)}</button>))}</div>}

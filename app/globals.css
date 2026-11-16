@@ -20,3 +20,8 @@ html[dir="rtl"] body { font-family: "Noto Sans Arabic", var(--font-sans); }
 .btn:hover { background: var(--color-teal-dark); }
 .btn2 { border:1px solid #B7CAD3; border-radius:.75rem; padding:.4rem .8rem; font-size:.85rem; background:#fff; }
 .card { background:#fff; border-radius:1rem; padding:1.25rem; border:1px solid var(--color-line); }
+
+.check-c { stroke-dasharray: 151; stroke-dashoffset: 151; animation: draw .6s ease-out forwards; }
+.check-p { stroke-dasharray: 40; stroke-dashoffset: 40; animation: draw .35s .5s ease-out forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) { .check-c, .check-p { animation: none; stroke-dashoffset: 0; } }
